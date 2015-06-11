@@ -82,8 +82,11 @@ class AMIClient(object):
 
     def action(self, name, **kwargs):
         actionid = kwargs.pop('actionid', str(uuid1()))
-        variable = kwargs.pop('variable', {})
-        variable = '|'.join(['%s=%s' % (k, v) for k, v in variable.items()])
+
+        variable = '\r\nvariable: '.join(
+            ['%s=%s' % (k, v) for k, v in kwargs.pop('variable', {}).items()]
+        )
+
         callback = kwargs.pop('callback', None)
 
         if callback:
