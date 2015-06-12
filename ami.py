@@ -73,13 +73,12 @@ class AMIClient(object):
             time.sleep(0)
 
     def parser(self, data):
-        res = data
+        res = {}
 
         try:
-            res = res.replace('"', '\\"')
-            res = res.replace('\r\n', '", "')
-            res = res.replace(': ', '": "')
-            res = json.loads('{"' + res + '"}')
+            for x in data.split('\r\n'):
+                k, v = x.split(': ', 1)
+                res[k] = v
         except:
             res = {'RawData': data}
 
