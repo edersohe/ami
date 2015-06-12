@@ -6,6 +6,21 @@ import socket
 from uuid import uuid1
 
 
+class DictToObject:
+
+    def __init__(self, entries):
+        self._dict = entries
+
+    def __getattr__(self, name):
+        try:
+            return self._dict[name]
+        except KeyError:
+            raise AttributeError(name)
+
+    def __repr__(self):
+        return self._dict.__repr__()
+
+
 class AMIClient(object):
 
     def __init__(self, username, password, host='localhost', port=5038,
@@ -24,7 +39,7 @@ class AMIClient(object):
                     callback=self._login, **kwargs)
 
     def _login(self, evt):
-        if evt['Response'] != 'Success':
+        if evt.Response != 'Success':
             raise Exception('Login Error')
 
     @property
@@ -46,25 +61,25 @@ class AMIClient(object):
             self._cbs_global['all'](event)
             time.sleep(0)
 
-        if 'event' in self._cbs_global and 'Event' in event:
+        if 'event' in self._cbs_global and hasattr(event, 'Event'):
             self._cbs_global['event'](event)
             time.sleep(0)
 
-        if 'response' in self._cbs_global and 'ActionID' in event:
+        if 'response' in self._cbs_global and hasattr(event, 'ActionID'):
             self._cbs_global['response'](event)
             time.sleep(0)
 
-        if 'ActionID' in event and event['ActionID'] in self._cbs_actions:
-            callback = self._cbs_actions.pop(event['ActionID'])
+        if hasattr(event, 'ActionID') and event.ActionID in self._cbs_actions:
+            callback = self._cbs_actions.pop(event.ActionID)
             callback(event)
             time.sleep(0)
 
-        elif 'Event' in event and event['Event'] in self._cbs_events:
-            callback = self._cbs_events.get(event['Event'])
+        elif hasattr(event, 'Event') and event.Event in self._cbs_events:
+            callback = self._cbs_events.get(event.Event)
             callback(event)
             time.sleep(0)
 
-        elif 'RawData' in event and 'raw' in self._cbs_global:
+        elif hasattr(event, 'RawData') and 'raw' in self._cbs_global:
             self._cbs_global['raw'](event)
             time.sleep(0)
 
@@ -78,7 +93,7 @@ class AMIClient(object):
         except:
             res = {'RawData': data}
 
-        return res
+        return DictToObject(res)
 
     def action(self, name, **kwargs):
         actionid = kwargs.pop('actionid', str(uuid1()))
