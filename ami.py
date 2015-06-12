@@ -27,8 +27,8 @@ class AMIClient(object):
         self.action('login', username=username, secret=password,
                     callback=self._login, **kwargs)
 
-    def _login(self, evt, obj, ami):
-        if obj['Response'] != 'Success':
+    def _login(self, evt):
+        if evt['Response'] != 'Success':
             raise Exception('Login Error')
 
     @property
@@ -47,29 +47,29 @@ class AMIClient(object):
 
     def dispatch(self, event):
         if 'all' in self._cbs_global:
-            self._cbs_global['all']('all', event, self)
+            self._cbs_global['all'](event)
             time.sleep(0)
 
         if 'event' in self._cbs_global and 'Event' in event:
-            self._cbs_global['event']('event', event, self)
+            self._cbs_global['event'](event)
             time.sleep(0)
 
         if 'response' in self._cbs_global and 'ActionID' in event:
-            self._cbs_global['response']('response', event, self)
+            self._cbs_global['response'](event)
             time.sleep(0)
 
         if 'ActionID' in event and event['ActionID'] in self._cbs_actions:
             callback = self._cbs_actions.pop(event['ActionID'])
-            callback(event['ActionID'], event, self)
+            callback(event)
             time.sleep(0)
 
         elif 'Event' in event and event['Event'] in self._cbs_events:
             callback = self._cbs_events.get(event['Event'])
-            callback(event['Event'], event, self)
+            callback(event)
             time.sleep(0)
 
         elif 'RawData' in event and 'raw' in self._cbs_global:
-            self._cbs_global['raw']('raw', event, self)
+            self._cbs_global['raw'](event)
             time.sleep(0)
 
     def parser(self, data):
