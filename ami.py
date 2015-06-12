@@ -4,10 +4,6 @@ monkey.patch_all()
 import time
 import socket
 from uuid import uuid1
-try:
-    import simplejson as json
-except ImportError:
-    import json
 
 
 class AMIClient(object):
