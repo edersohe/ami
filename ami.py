@@ -24,7 +24,12 @@ class AMIClient(object):
         while not self.version.endswith('\r\n'):
             self._version += self.sock.recv(1024)
             time.sleep(0)
-        self.action('login', username=username, secret=password, **kwargs)
+        self.action('login', username=username, secret=password,
+                    callback=self._login, **kwargs)
+
+    def _login(self, evt, obj, ami):
+        if obj['Response'] != 'Success':
+            raise Exception('Login Error')
 
     @property
     def sock(self):
