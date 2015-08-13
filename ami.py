@@ -59,29 +59,27 @@ class AMIClient(object):
     def dispatch(self, event):
         if 'all' in self._cbs_global:
             self._cbs_global['all'](event)
-            time.sleep(0)
 
         if 'event' in self._cbs_global and hasattr(event, 'Event'):
             self._cbs_global['event'](event)
-            time.sleep(0)
 
         if 'response' in self._cbs_global and hasattr(event, 'ActionID'):
             self._cbs_global['response'](event)
-            time.sleep(0)
+
+        time.sleep(0)
 
         if hasattr(event, 'ActionID') and event.ActionID in self._cbs_actions:
             callback = self._cbs_actions.pop(event.ActionID)
             callback(event)
-            time.sleep(0)
 
         elif hasattr(event, 'Event') and event.Event in self._cbs_events:
             callback = self._cbs_events.get(event.Event)
             callback(event)
-            time.sleep(0)
 
         elif hasattr(event, 'RawData') and 'raw' in self._cbs_global:
             self._cbs_global['raw'](event)
-            time.sleep(0)
+
+        time.sleep(0)
 
     def parser(self, data):
         res = {}
@@ -120,7 +118,7 @@ class AMIClient(object):
 
         return actionid
 
-    def serve_forever(self):
+    def start(self):
         buffer = ''
         while True:
             buffer += self.sock.recv(1024)
